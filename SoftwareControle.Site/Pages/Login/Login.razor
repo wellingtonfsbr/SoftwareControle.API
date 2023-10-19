@@ -1,0 +1,65 @@
+﻿@page "/login"
+@using SoftwareControle.Models;
+
+@inject NavigationManager navManager
+@inject IAuthenticationService authService
+
+<EditForm Model="LoginUser" OnValidSubmit="ExecuteLogin">
+	<div class="login-box">
+		<div class="login-label">
+			Iniciar sessão
+		</div>
+
+		<div class="user-box">
+			<label for="email" class="visually-hidden">Usuario</label>
+			<div class="inputtt-group">
+				<InputText @bind-Value="LoginUser.Usuario" placeholder="Usuario" class=" inputtt" />
+				<label>Usuario</label>
+			</div>
+		</div>
+
+		<div class="user-box">
+			<label for="senha" class="visually-hidden">Senha</label>
+			<div class="inputtt-group">
+				<InputText type="password" @bind-Value="LoginUser.Senha" placeholder="Senha" class="inputtt" />
+				<label> Senha</label>
+			</div>
+		</div>
+
+
+		<div class="text-center mt-4">
+			<button type="submit" class="botao-principal">Login</button>
+		</div>
+
+	</div>
+
+	@if (showAuthenticationError)
+	{
+		<div role="alert" class="error-box">
+			<p class="error-text">@authenticationErrorText</p>
+		</div>
+	}
+</EditForm>
+
+@code {
+	private AuthenticationUserModel LoginUser = new();
+	private bool showAuthenticationError = false;
+	private string authenticationErrorText = "";
+
+	private async Task ExecuteLogin()
+	{
+		showAuthenticationError = false;
+
+		var result = await authService.Login(LoginUser);
+
+		if (result is not null)
+		{
+			navManager.NavigateTo("/", forceLoad: true);
+		}
+		else
+		{
+			authenticationErrorText = "Usuario ou senha incorretos";
+			showAuthenticationError = true;
+		}
+	}
+}

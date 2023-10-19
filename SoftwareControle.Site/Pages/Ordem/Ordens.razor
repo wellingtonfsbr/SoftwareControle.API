@@ -1,0 +1,245 @@
+﻿@page "/ordens"
+
+@inject ISessaoUsuario sessao
+@inject IUsuarioEndpoints usuarioEndpoints
+@inject IOrdemEndpoints ordemEndpoints
+@inject NavigationManager navManager
+
+@if (inicializado)
+{
+    <div class="buscar-input-date-div">
+        <div class="d-flex align-items-center">
+            <button class="botao-filtro-ordem" @onclick="BuscarTodasOrdens">Todas</button>
+            <button class="botao-filtro-ordem" @onclick="FiltrarOrdensEmEspera">Espera</button>
+            <button class="botao-filtro-ordem" @onclick="FiltrarOrdensFinalizadas">Finalizadas</button>
+
+            <button class="botao-filtro-ordem" @onclick="FiltrarOrdensIniciadas">Iniciadas</button>
+        </div>
+
+
+
+
+
+
+
+        <div class="d-flex align-items-center ">
+
+            <div class="text-center">
+                <div class="data-filtro-label">De</div>
+                <div>
+                    <InputDate class="input-date" @bind-Value="@DataInicio" />
+                </div>
+            </div>
+
+            <div class="text-center">
+                <div class="data-filtro-label">Ate</div>
+                <div>
+                    <InputDate class="input-date" @bind-Value="@DataFim" />
+                </div>
+            </div>
+            <div class="mx-4">
+                <button class="botao-filtro" @onclick="FiltrarRelatorioPorData">Buscar</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="buscar-input-date-div">
+        <InputText @bind-Value="@nomeResponsavel" class="elemento-buscar-input"
+        @oninput="(e) => FiltrarOrdemPorResponsavel(e.Value?.ToString()!)"
+                   placeholder="Procurar ordem por nome do responsável" />
+
+        <div class="w-100">
+            <InputText @bind-Value="@nomeFerramenta" class="elemento-buscar-input"
+            @oninput="(e) => FiltrarOrdemPorFerramenta(e.Value?.ToString()!)"
+                       placeholder="Procurar ordem por nome da ferramenta" />
+        </div>
+
+    </div>
+
+
+
+
+
+    @if (ListaOrdem is null || ListaOrdem.Count() == 0)
+    {
+        <div class="text-center my-5 fs-3 fw-bold">Não foi encontrado nenhuma ordem.</div>
+    }
+    else
+    {
+        <div class="elementos-lista" id="elementos-lista-label">
+            <div class="elemento-node">Descrição</div>
+            <div class="elemento-node">Urgência</div>
+            <div class="elemento-node">Criado em</div>
+            <div class="elemento-node">Prazo máximo</div>
+            <div class="elemento-node">Situação</div>
+            <div class="elemento-node">Responsável</div>
+            <div class="elemento-node">Ferramenta</div>
+        </div>
+        <Virtualize Items="@ListaOrdem" Context="ordem" OverscanCount="50">
+            <a class="elementos-lista" href="/ordem/@ordem.Id">
+                <div class="elemento-node">@ordem.Descricao</div>
+                <div class="elemento-node">
+                    @if (@ordem.NivelUrgencia.ToString() == "Urgente")
+                    {
+                        <div class="text-color-danger">Urgente</div>
+                    }
+                    else
+                    {
+                        <div>Normal</div>
+                    }
+                </div>
+                <div class="elemento-node">@ordem.DataCriacao</div>
+                <div class="elemento-node">@ordem.DataPrazoMaximo.ToString("dd/MM/yyyy")</div>
+                <div class="elemento-node">
+                    @if (ordem.Situacao == "Espera")
+                    {
+                        <div class="situacao-espera">Espera</div>
+                    }
+                    else if (ordem.Situacao == "Iniciada")
+                    {
+                        <div class="situacao-iniciada">Iniciada</div>
+                    }
+                    else
+                    {
+                        <div class="situacao-finalizada">Finalizada</div>
+                    }
+                </div>
+                <div class="elemento-node">@ordem.NomeResponsavel</div>
+                <div class="elemento-node">@ordem.NomeFerramenta</div>
+            </a>
+        </Virtualize>
+    }
+}
+
+@code {
+    private Guid UsuarioLogadoId { get; set; }
+    private List<OrdemModel>? ListaOrdem = new();
+    private List<OrdemModel>? TodasOrdens = new();
+    private DateTime DataInicio { get; set; } = DateTime.Today.AddDays(-7);
+    private DateTime DataFim { get; set; } = DateTime.Today;
+
+    private bool inicializado = false;
+    private string nomeResponsavel = string.Empty;
+    private string nomeFerramenta = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await BuscarUsuarioLogadoId();
+        if (UsuarioLogadoId == Guid.Empty)
+        {
+            navManager.NavigateTo("/login");
+            return;
+        }
+
+        await BuscarOrdens();
+
+        inicializado = true;
+    }
+
+    private async Task BuscarUsuarioLogadoId()
+    {
+        UsuarioLogadoId = await sessao.BuscarIdDoUsuarioLogado();
+    }
+    private async Task BuscarOrdens()
+    {
+        var ordens = await ordemEndpoints.Buscar();
+
+        if (ordens is not null)
+        {
+            TodasOrdens = ordens.OrderByDescending(x => x.DataCriacao).ToList();
+
+            ListaOrdem = ordens
+            .Where(x => x.Situacao != "Finalizada")
+            .OrderByDescending(x => x.NivelUrgencia)
+            .ThenBy(x => x.Situacao)
+            .ToList();
+        }
+
+        if (ListaOrdem!.Count() == 0)
+        {
+            ListaOrdem = TodasOrdens;
+        }
+    }
+    private void BuscarTodasOrdens()
+    {
+        if (TodasOrdens is not null)
+            ListaOrdem = TodasOrdens
+            .OrderByDescending(x => x.DataCriacao)
+            .ToList();
+    }
+
+    private void FiltrarOrdensFinalizadas()
+    {
+        if (TodasOrdens is not null)
+            ListaOrdem = TodasOrdens
+            .Where(x => x.Situacao == "Finalizada")
+            .OrderBy(x => x.DataCriacao)
+            .ToList();
+    }
+    private void FiltrarOrdensEmEspera()
+    {
+        if (TodasOrdens is not null)
+            ListaOrdem = TodasOrdens
+            .Where(x => x.Situacao == "Espera")
+            .OrderByDescending(x => x.NivelUrgencia)
+            .ThenByDescending(x => x.DataPrazoMaximo)
+            .ToList();
+    }
+    private void FiltrarOrdensIniciadas()
+    {
+        if (TodasOrdens is not null)
+            ListaOrdem = TodasOrdens
+            .Where(x => x.Situacao == "Iniciada")
+            .OrderBy(x => x.DataCriacao)
+            .ToList();
+    }
+
+    private void FiltrarRelatorioPorData()
+    {
+        if (TodasOrdens is not null)
+        {
+            ListaOrdem = TodasOrdens
+                .Where(x => x.DataCriacao >= DataInicio && x.DataCriacao <= DataFim
+                    .AddHours(23).AddMinutes(59))
+                .OrderByDescending(x => x.DataCriacao)
+                .ToList();
+        }
+    }
+
+    private void FiltrarOrdemPorResponsavel(string nomeResponsavel)
+    {
+        List<OrdemModel>? ordensFiltradas = new();
+
+        if (TodasOrdens is not null)
+        {
+            ordensFiltradas = TodasOrdens.Where(x => x.NomeResponsavel is not null).ToList();
+        }
+
+        ListaOrdem = ordensFiltradas
+            .Where(x => x.NomeResponsavel!.ToLower()
+            .Contains(nomeResponsavel.ToLower()))
+            .ToList();
+
+        if (nomeResponsavel == string.Empty)
+            ListaOrdem = TodasOrdens;
+    }
+
+    private void FiltrarOrdemPorFerramenta(string nomeFerramenta)
+    {
+        List<OrdemModel>? ordensFiltradas = new();
+
+        if (TodasOrdens is not null)
+        {
+            ordensFiltradas = TodasOrdens.Where(x => x.NomeFerramenta is not null).ToList();
+        }
+
+        ListaOrdem = ordensFiltradas
+            .Where(x => x.NomeFerramenta!.ToLower()
+            .Contains(nomeFerramenta.ToLower()))
+            .ToList();
+
+        if (nomeFerramenta == string.Empty)
+            ListaOrdem = TodasOrdens;
+    }
+}

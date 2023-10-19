@@ -1,0 +1,129 @@
+﻿@page "/finalizarordem/{OrdemId}/{OrdemFinalizarDescricao}"
+
+@inject ISessaoUsuario sessao
+@inject IUsuarioEndpoints usuarioEndpoints
+@inject IFerramentaEndpoints ferramentaEndpoints
+@inject IOrdemEndpoints ordemEndpoints
+@inject IRelatorioEndpoints relatorioEndpoints
+@inject IRelatorioGenerator relatorioGenerator
+@inject NavigationManager navManager
+
+@code {
+	[Parameter]
+	public string? OrdemId { get; set; }
+	[Parameter]
+	public string? OrdemFinalizarDescricao { get; set; }
+
+	private Guid UsuarioLogadoId { get; set; }
+	private UsuarioModel? UsuarioLogadoModel { get; set; }
+	private FerramentaModel? FerramentaModel { get; set; }
+	private OrdemModel? OrdemModel { get; set; }
+	private RelatorioModel Relatorio = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		if(OrdemId == Guid.Empty.ToString())
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		await BuscarUsuarioLogadoId();
+		if(UsuarioLogadoId == Guid.Empty)
+		{
+			navManager.NavigateTo("/login");
+			return;
+		}
+
+		await BuscarUsuarioLogadoModel();
+		if(UsuarioLogadoModel is null)
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		await BuscarOrdemModel();
+		if(OrdemModel is null)
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		if(OrdemModel.Situacao != "Iniciada" || 
+			OrdemModel.NomeResponsavel != UsuarioLogadoModel.Nome)
+		{
+			navManager.NavigateTo("/naoiniciada");
+			return;
+		}
+
+		await BuscarFerramentaModel();
+		if(FerramentaModel is null)
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		await Atualizar();
+	}
+
+	private async Task BuscarUsuarioLogadoId()
+	{
+		UsuarioLogadoId = await sessao.BuscarIdDoUsuarioLogado();
+	}
+	private async Task BuscarUsuarioLogadoModel()
+	{
+		UsuarioLogadoModel = await usuarioEndpoints.BuscarPorId(UsuarioLogadoId!);
+	}
+	private async Task BuscarOrdemModel()
+	{
+		OrdemModel = await ordemEndpoints.BuscarPorId(Guid.Parse(OrdemId!));
+	}
+	private async Task BuscarFerramentaModel()
+	{
+		FerramentaModel = await ferramentaEndpoints.BuscarPorId(OrdemModel!.FerramentaId);
+	}
+
+	private async Task Atualizar()
+	{
+		OrdemModel!.Situacao = "Finalizada";
+		OrdemModel.DataFinalizado = DateTime.UtcNow.AddHours(-3);
+		OrdemModel.DescricaoResponsavel = OrdemFinalizarDescricao;
+		OrdemModel.HorasTrabalhadas = CalcularHorasTrabalhadas();
+		FerramentaModel!.Disponivel = true;
+
+		try
+		{
+			await ordemEndpoints.Atualizar(OrdemModel);
+			await ferramentaEndpoints.Atualizar(FerramentaModel);
+			await CriarRelatorio();
+			navManager.NavigateTo($"/ordem/{OrdemId}");
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine(ex);
+			navManager.NavigateTo("/erro");
+			throw;
+		}
+	}
+	private async Task CriarRelatorio()
+	{
+		Relatorio = relatorioGenerator.FinalizarOrdemRelatorio(OrdemModel!.NomeResponsavel!,
+			OrdemModel.NomeFerramenta, OrdemModel.Descricao);
+
+		await relatorioEndpoints.Criar(Relatorio);
+	}
+	private int CalcularHorasTrabalhadas()
+	{
+		DateTime inicio = DateTime.Parse(OrdemModel!.DataIniciado.ToString()!);
+		DateTime fim = DateTime.Parse(OrdemModel!.DataFinalizado.ToString()!);
+
+		int horas = 0;
+
+		for (var i = inicio; i < fim; i = i.AddHours(1))
+		{
+			horas++;
+		}
+
+		return horas;
+	}
+}

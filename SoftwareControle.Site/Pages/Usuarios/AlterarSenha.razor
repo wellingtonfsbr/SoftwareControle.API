@@ -1,0 +1,109 @@
+﻿@page "/alterarsenha/{UsuarioId}"
+
+@inject ISessaoUsuario sessao
+@inject IUsuarioEndpoints usuarioEndpoints
+@inject NavigationManager navManager
+
+@if (inicializado)
+{
+	<div class="text-center fs-3 fw-bold my-4">Trocar senha do usuario @UsuarioTrocarSenha!.Nome</div>
+	<div class="text-center">
+		<EditForm Model="UsuarioTrocarSenha" OnValidSubmit="Atualizar" Context="Form">
+			<div>
+				<InputText @bind-Value="UsuarioTrocarSenha!.Senha" type="password"
+					class="input" placeholder="Nova Senha" />
+			</div>
+			<div class="my-4">
+				<InputText @bind-Value="confirmarSenha" type="password"
+						   class="input" placeholder="Confirmar Senha" />
+			</div>
+			<div class="d-flex my-5 justify-content-end align-items-center">
+				<div>
+					<button type="submit" class="botao-principal"
+							id="botao-padding-ajustes">
+						Alterar
+					</button>
+				</div>
+				<div>
+					<a href="/usuario/@UsuarioId" class="botao-principal">Voltar</a>
+				</div>
+			</div>
+		</EditForm>
+	</div>
+	<div class="text-center my-4 fs-3 fw-bold text-danger">
+		@resultado
+	</div>
+}
+
+@code {
+	[Parameter]
+	public string? UsuarioId { get; set; }
+
+	private Guid UsuarioLogadoId { get; set; }
+	private UsuarioModel? UsuarioLogadoModel { get; set; }
+	private UsuarioModel? UsuarioTrocarSenha = new();
+
+	private bool inicializado = false;
+	private string? resultado = string.Empty;
+	private string confirmarSenha = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await BuscarUsuarioLogadoId();
+		if(UsuarioLogadoId == Guid.Empty)
+		{
+			navManager.NavigateTo("/login");
+			return;
+		}
+
+		await BuscarUsuarioLogadoModel();
+		if(UsuarioLogadoModel is null)
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+		if(UsuarioLogadoModel.Cargo != "Administrador")
+		{
+			navManager.NavigateTo("/naoautorizado");
+			return;
+		}
+
+		await BuscarUsuarioTrocarSenha();
+		if(UsuarioTrocarSenha is null)
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		inicializado = true;
+	}
+
+	private async Task BuscarUsuarioLogadoId()
+	{
+		UsuarioLogadoId = await sessao.BuscarIdDoUsuarioLogado();
+	}
+	private async Task BuscarUsuarioLogadoModel()
+	{
+		UsuarioLogadoModel = await usuarioEndpoints.BuscarPorId(UsuarioLogadoId);
+	}
+	private async Task BuscarUsuarioTrocarSenha()
+	{
+		UsuarioTrocarSenha = await usuarioEndpoints.BuscarPorId(Guid.Parse(UsuarioId!));
+	}
+
+	private async Task Atualizar()
+	{
+		if(UsuarioTrocarSenha!.Senha != confirmarSenha)
+		{
+			resultado = "As senhas não coincidem.";
+			return;
+		}
+
+		resultado = await usuarioEndpoints.AtualizarSenha(UsuarioTrocarSenha!);
+
+		if (resultado is not null)
+			return;
+
+		navManager.NavigateTo($"/usuario/{UsuarioTrocarSenha!.Id}");
+	}
+}

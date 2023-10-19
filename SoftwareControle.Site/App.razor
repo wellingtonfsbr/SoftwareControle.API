@@ -1,0 +1,18 @@
+﻿<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <Authorizing>
+                <text>Aguarde estamos autorizando...</text>>
+            </Authorizing>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <CascadingAuthenticationState>
+            <PageTitle>Não encontrado</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p>Pagina não encontrada</p>
+            </LayoutView>
+        </CascadingAuthenticationState>
+    </NotFound>
+</Router>

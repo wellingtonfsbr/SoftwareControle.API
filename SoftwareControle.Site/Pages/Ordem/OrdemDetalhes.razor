@@ -1,0 +1,264 @@
+﻿@page "/ordem/{OrdemId}"
+
+@inject ISessaoUsuario sessao
+@inject IUsuarioEndpoints usuarioEndpoints
+@inject IOrdemEndpoints ordemEndpoints
+@inject NavigationManager navManager
+
+@if (inicializado)
+{
+	<div class="text-center my-3 fs-3 fw-bold">Informações da ordem</div>
+		<div class="elemento-detalhes-boxx">
+			<div>
+				<div class="label-principal">Ferramenta</div>
+				<div class="text-center my-4 fs-3">@OrdemModel!.NomeFerramenta</div>
+			</div>
+			<div>
+				<div class="label-principal">Descrição</div>
+				<div class="text-center my-5 fs-3">@OrdemModel.Descricao</div>
+			</div>
+		
+				<div class="label-principal">Informações</div>
+				<div class="d-flex justify-content-evenly align-items-center">
+					<div class="my-4 text-center">
+						<div class="mb-2 fs-3 fw-bold">Urgência</div>
+						<div class="fs-4">
+							@if (OrdemModel.NivelUrgencia == "Urgente")
+							{
+								<div class="text-color-danger">Urgente</div>
+							}
+							else
+							{
+								<div>Normal</div>
+							}
+						</div>
+					</div>
+					<div class="my-4 text-center">
+						<div class="mb-2 fs-3 fw-bold">Situação</div>
+						@if (OrdemModel.Situacao == "Espera")
+						{
+							<div class="situacao-espera-detalhes">Espera</div>
+						}
+						else if (OrdemModel.Situacao == "Iniciada")
+						{
+							<div class="situacao-iniciada-detalhes">Iniciada</div>
+						}
+						else
+						{
+							<div class="situacao-finalizada-detalhes">Finalizada</div>
+						}
+					</div>
+				</div>
+		
+			<div>
+				<div class="label-principal">Prazos</div>
+				<div class="d-flex justify-content-evenly align-items-center">
+					<div class="my-4 text-center">
+						<div class="mb-2 fs-3 fw-bold">Prazo máximo</div>
+						<div class="fs-4">
+							@OrdemModel.DataPrazoMaximo.ToString("dd/MM/yyyy")
+						</div>
+					</div>
+					<div class="my-4 text-center">
+						<div class="mb-2 fs-3 fw-bold">Criado em</div>
+						<div class="fs-4">
+							@OrdemModel.DataCriacao
+						</div>
+					</div>
+				</div>
+				<div class="d-flex justify-content-evenly align-items-center">
+					<div class="my-4 text-center">
+						<div class="mb-2 fs-3 fw-bold">Data inicio</div>
+						<div class="fs-4">
+							@OrdemModel.DataIniciado
+						</div>
+					</div>
+					<div class="my-4 text-center">
+						<div class="mb-2 fs-3 fw-bold">Data finalizado</div>
+						<div class="fs-4">
+							@OrdemModel.DataFinalizado
+						</div>
+					</div>
+				</div>
+				@if (OrdemModel.HorasTrabalhadas is not null)
+				{
+					<div class="my-4 text-center">
+						<div class="mb-2 fs-3 fw-bold">Horas trabalhadas</div>
+						<div class="fs-4">
+							@OrdemModel.HorasTrabalhadas
+						</div>
+					</div>
+				}
+			</div>
+			@if(OrdemModel.NomeResponsavel != string.Empty)
+			{
+				<div class="my-4 text-center">
+					<div class="label-principal">Responsavel</div>
+					<div class="my-4 fs-4">
+						@OrdemModel.NomeResponsavel
+					</div>
+				</div>
+			}
+			@if (OrdemModel.Situacao == "Finalizada")
+			{
+				<div>
+					<div class="label-principal">Descrição do responsável</div>
+					<div class="text-center my-4 fs-3">@OrdemModel.DescricaoResponsavel</div>
+				</div>
+			}
+	
+		@if (mostrarFinalizarDescricao)
+		{
+			<div class="text-center">
+				<EditForm Model="OrdemModel" OnValidSubmit="FinalizarOrdemMethod" Context="Form">
+					<div>
+						<div class="text-center my-4 fs-3">Insira uma descrição do trabalho feito.</div>
+						<InputTextArea @bind-Value="OrdemModel!.DescricaoResponsavel" class="input"
+									   placeholder="Descrição do trabalho" />
+					</div>
+					<div class="mt-2">
+						<button type="submit" class="botao-principal"
+								id="botao-padding-ajustes">
+							Finalizar
+						</button>
+					</div>
+				</EditForm>
+			</div>
+		}
+		@if (mostrarDeletarDiv)
+		{
+			<div class="text-center">
+				<div class="fs-4 my-4">
+					Tem certeza que deseja deletar essa ordem?
+				</div>
+				<div >
+					<button @onclick="Deletar" class="botao-principal">Confirmar</button>
+				</div>
+			</div>
+		}
+		<div class="d-flex my-2 justify-content-end align-items-center">
+			@if(OrdemModel.Situacao == "Espera")
+			{
+				<div class="mb-2">
+					<a href="/aceitarordem/@OrdemId" class="botao-principal">Aceitar ordem</a>
+				</div>
+			}
+			else if (OrdemModel.Situacao == "Iniciada")	
+			{
+				<div class="mb-2">
+					<button class="botao-principal" @onclick="ToggleMostrarFinalizarDescricao"
+							id="botao-padding-ajustes">
+						@toggleFinalizarBotaoNome
+					</button>
+				</div>
+			}
+
+			@if (UsuarioLogadoModel!.Cargo == "Administrador")
+			{
+				<div class="mb-2">
+					<button @onclick="MostrarDelete" class="botao-principal"
+							id="botao-principal">
+						@mostrarDeletarBotaoNome
+					</button>
+				</div>
+			}
+			<div>
+				<a href="/ordens" class="botao-principal">Voltar</a>
+			</div>
+		</div>
+	</div>
+}
+
+@code {
+	[Parameter]
+	public string? OrdemId { get; set; }
+
+	private Guid UsuarioLogadoId { get; set; }
+	private UsuarioModel? UsuarioLogadoModel { get; set; }
+	private OrdemModel? OrdemModel { get; set; }
+
+	private bool inicializado = false;
+	private bool mostrarDeletarDiv = false;
+	private bool mostrarFinalizarDescricao = false;
+	private string mostrarDeletarBotaoNome = "Deletar";
+	private string toggleFinalizarBotaoNome = "Finalizar";
+
+	protected async override Task OnInitializedAsync()
+	{
+		if(OrdemId == Guid.Empty.ToString())
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		await BuscarUsuarioLogadoId();
+		if(UsuarioLogadoId == Guid.Empty)
+		{
+			navManager.NavigateTo("/login");
+			return;
+		}
+
+		await BuscarUsuarioModel();
+		if(UsuarioLogadoModel is null)
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		await BuscarOrdemModel();
+		if(OrdemModel is null)
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		inicializado = true;
+	}
+
+	private async Task BuscarUsuarioLogadoId()
+	{
+		UsuarioLogadoId = await sessao.BuscarIdDoUsuarioLogado();
+	}
+	private async Task BuscarUsuarioModel()
+	{
+		UsuarioLogadoModel = await usuarioEndpoints.BuscarPorId(UsuarioLogadoId);
+	}
+	private async Task BuscarOrdemModel()
+	{
+		OrdemModel = await ordemEndpoints.BuscarPorId(Guid.Parse(OrdemId!));
+	}
+	private void MostrarDelete()
+	{
+		if(mostrarDeletarDiv is false)
+		{
+			mostrarDeletarBotaoNome = "Ocultar";
+			mostrarDeletarDiv = true;
+			return;
+		}
+
+		mostrarDeletarBotaoNome = "Deletar";
+		mostrarDeletarDiv = false;
+	}
+
+	private void FinalizarOrdemMethod()
+	{
+		navManager.NavigateTo($"/finalizarordem/{OrdemId}/{OrdemModel!.DescricaoResponsavel}");
+	}
+	private async Task Deletar()
+	{
+		await ordemEndpoints.Deletar(Guid.Parse(OrdemId!));
+		navManager.NavigateTo("/ordens");
+	}
+	private void ToggleMostrarFinalizarDescricao()
+	{
+		if(mostrarFinalizarDescricao is false)
+		{
+			toggleFinalizarBotaoNome = "Ocultar";
+			mostrarFinalizarDescricao = true;
+			return;
+		}
+
+		mostrarFinalizarDescricao = false;
+		toggleFinalizarBotaoNome = "Finalizar";
+	}
+}

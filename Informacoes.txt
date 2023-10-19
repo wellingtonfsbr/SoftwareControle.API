@@ -1,0 +1,11 @@
+Colocar no secrets da API:
+
+{
+  "ConnectionStrings": {
+    "SoftwareControleConnection": ""
+  },
+  "Jwt": {
+    "Key": "55 random characters"
+  }
+}
+

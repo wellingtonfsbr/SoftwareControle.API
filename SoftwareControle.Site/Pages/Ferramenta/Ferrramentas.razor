@@ -1,0 +1,138 @@
+﻿@page "/ferramentas"
+
+@inject ISessaoUsuario sessao
+@inject IFerramentaEndpoints ferramentaEndpoints
+@inject IUsuarioEndpoints usuarioEndpoints
+@inject NavigationManager navManager
+
+@if (inicializado)
+{
+	<div class="buscar-input-div">
+		<InputText @bind-Value="@nomeFerramenta" class="elemento-buscar-input"
+		@oninput="(e) => FilterFerramentaPorNome(e.Value?.ToString())"
+				   placeholder="Procurar ferramenta por nome" />
+	</div>
+	@if (Ferramentas is null || Ferramentas.Count() == 0)
+	{
+		<div class="text-center my-5 fs-3 fw-bold">
+			Não foi encontrado nenhuma ferramenta.
+		</div>
+	}
+	else
+	{
+		<div class="elementos-lista">
+			<div class="elemento-node">Foto</div>
+			<div class="elemento-node">Nome</div>
+			<div class="elemento-node">Descrição</div>
+			<div class="elemento-node">Disponibilidade</div>
+		</div>
+		<Virtualize Items="@Ferramentas" Context="ferramenta" OverscanCount="50">
+			<a class="elementos-lista" href="/ferramenta/@ferramenta.Id">
+				<div class="elemento-node">@if(ferramenta.ImagemString != string.Empty)
+				{
+					<img src="data:image/jpeg;base64,@ferramenta.ImagemString" alt="Foto" 
+						class="elementos-lista-foto">
+				}
+				else
+				{
+					<div class="elemento-node">Sem foto</div>
+				}
+				</div>
+				<div class="elemento-node">@ferramenta.Nome</div>
+				<div class="elemento-node">@ferramenta.Descricao</div>
+				<div class="elemento-node">
+					@if (ferramenta.Disponivel is true)
+					{
+						<div class="text-color-success">Disponivel</div>
+					}
+					else
+					{
+						<div class="text-color-danger">Indisponivel</div>
+					}
+				</div>
+			</a>
+		</Virtualize>
+	}
+	<div class="d-flex my-5 justify-content-end">
+	@if (UsuarioLogadoModel!.Cargo == "Administrador")
+	{
+		<div>
+			<a class="botao-principal" href="/ferramenta/criar">Adicionar</a>
+		</div>
+	}
+		<div>
+			<a class="botao-principal" href="/">Voltar</a>
+		</div>
+	</div>
+}
+
+@code {
+	private Guid UsuarioLogadoId { get; set; }
+
+	private List<FerramentaModel>? Ferramentas = new();
+	private List<FerramentaModel>? TodasFerramentas = new();
+	private UsuarioModel? UsuarioLogadoModel { get; set; }
+
+	private bool inicializado = false;
+	private string nomeFerramenta = string.Empty;
+
+	protected async override Task OnInitializedAsync()
+	{
+		await BuscarUsuarioLogadoId();
+
+		if (UsuarioLogadoId == Guid.Empty)
+		{
+			navManager.NavigateTo("/login");
+			return;
+		}
+
+		await BuscarFerramentas();
+		await BuscarUsuarioLogadoModel();
+
+		if (UsuarioLogadoModel is null)
+		{
+			navManager.NavigateTo("/");
+			return;
+		}
+
+		inicializado = true;
+	}
+
+	private async Task BuscarUsuarioLogadoId()
+	{
+		UsuarioLogadoId = await sessao.BuscarIdDoUsuarioLogado();
+	}
+	private async Task BuscarFerramentas()
+	{
+		var ferramentasRequest = await ferramentaEndpoints.Buscar();
+
+		if (ferramentasRequest is not null)
+		{
+			Ferramentas = ferramentasRequest!.OrderByDescending(x => x.Nome).ToList();
+
+			foreach (var ferramenta in Ferramentas)
+			{
+				if(ferramenta.Imagem is not null)
+					ferramenta.ImagemString = Convert.ToBase64String(ferramenta.Imagem);
+			}
+
+			TodasFerramentas = Ferramentas;
+		}
+	}
+	private async Task BuscarUsuarioLogadoModel()
+	{
+		UsuarioLogadoModel = await usuarioEndpoints.BuscarPorId(UsuarioLogadoId);
+	}
+
+	private void FilterFerramentaPorNome(string? nomeFerramenta)
+	{
+		if(nomeFerramenta is not null)
+		{
+			Ferramentas = TodasFerramentas!.Where(x => x.Nome.ToLower()
+				.Contains(nomeFerramenta.ToLower())).ToList();
+
+			if (nomeFerramenta == string.Empty)
+				Ferramentas = TodasFerramentas;
+		}
+	}
+}

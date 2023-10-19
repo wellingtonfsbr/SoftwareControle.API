@@ -1,0 +1,83 @@
+﻿@page "/aceitarordem/{OrdemId}"
+
+@inject ISessaoUsuario sessao
+@inject IUsuarioEndpoints usuarioEndpoints
+@inject IOrdemEndpoints ordemEndpoints
+@inject IRelatorioEndpoints relatorioEndpoints
+@inject IRelatorioGenerator relatorioGenerator
+@inject NavigationManager navManager
+
+@code {
+	[Parameter]
+	public string? OrdemId { get; set; }
+
+	private Guid UsuarioLogadoId { get; set; }
+	private UsuarioModel? UsuarioLogadoModel { get; set; }
+	private OrdemModel? OrdemModel { get; set; }
+	private RelatorioModel Relatorio = new();
+
+	protected async override Task OnInitializedAsync()
+	{
+		if(OrdemId == Guid.Empty.ToString())
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		await BuscarOrdemModel();
+		if (OrdemModel is null || OrdemModel.NomeResponsavel != string.Empty ||
+				OrdemModel.Situacao != "Espera")
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		await BuscarUsuarioLogadoId();
+		if(UsuarioLogadoId == Guid.Empty)
+		{
+			navManager.NavigateTo("/login");
+			return;
+		}
+
+		await BuscarUsuarioLogadoModel();
+		if(UsuarioLogadoModel is null)
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		await AceitarOrdemMethod();
+	}
+
+	private async Task BuscarUsuarioLogadoId()
+	{
+		UsuarioLogadoId = await sessao.BuscarIdDoUsuarioLogado();
+	}
+	private async Task BuscarUsuarioLogadoModel()
+	{
+		UsuarioLogadoModel = await usuarioEndpoints.BuscarPorId(UsuarioLogadoId);
+	}
+	private async Task BuscarOrdemModel()
+	{
+		OrdemModel = await ordemEndpoints.BuscarPorId(Guid.Parse(OrdemId!));
+	}
+	private async Task AceitarOrdemMethod()
+	{
+		OrdemModel!.NomeResponsavel = UsuarioLogadoModel!.Nome;
+		OrdemModel.Situacao = "Iniciada";
+		OrdemModel.DataIniciado = DateTime.UtcNow.AddHours(-3);
+
+		await ordemEndpoints.Atualizar(OrdemModel);
+		await CriarRelatorio();
+
+		navManager.NavigateTo($"/ordem/{OrdemId}");
+	}
+	private async Task CriarRelatorio()
+	{
+		Relatorio = relatorioGenerator.AceitarOrdemRelatorio(OrdemModel!.NomeResponsavel!,
+			OrdemModel.NomeFerramenta, OrdemModel.Descricao);
+
+		await relatorioEndpoints.Criar(Relatorio);
+	}
+}
+

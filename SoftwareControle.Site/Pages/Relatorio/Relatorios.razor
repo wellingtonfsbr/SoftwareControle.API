@@ -1,0 +1,153 @@
+﻿@page "/relatorios"
+
+@inject ISessaoUsuario sessao
+@inject IRelatorioEndpoints relatorioEndpoints
+@inject NavigationManager navManager
+
+@if (inicializado)
+{
+	<div class="buscar-input-date-div">
+		<div class="d-flex align-items-center">
+			<div class="text-center">
+				<div class="data-filtro-label">De</div>
+				<div>
+					<InputDate class="input-date" @bind-Value="@DataInicio" />
+				</div>
+			</div>
+			<div class="text-center">
+				<div class="data-filtro-label">Ate</div>
+				<div>
+					<InputDate class="input-date" @bind-Value="@DataFim" />
+				</div>
+			</div>
+			<div class="mx-4">
+				<button class="botao-filtro" @onclick="FiltrarRelatorioPorData">Buscar</button>
+			</div>
+		</div>
+		<div class="w-50">
+			<div>
+				<InputText @bind-Value="@nomeUsuario" class="elemento-buscar-input"
+				@oninput="(e) => FiltrarRelatorioPorUsuario(e.Value?.ToString()!)"
+						   placeholder="Procurar relatorio por nome do usuario" />
+			</div>
+			<div>
+				<InputText @bind-Value="@nomeFerramenta" class="elemento-buscar-input"
+				@oninput="(e) => FiltrarRelatorioPorFerramenta(e.Value?.ToString()!)"
+						   placeholder="Procurar relatorio por nome da ferramenta" />
+			</div>
+		</div>
+	</div>
+
+	@if (ListaRelatorios is null || ListaRelatorios.Count() == 0)
+	{
+		<div class="text-center my-5 fs-3 fw-bold">Não foi encontrado nenhum relatório.</div>
+	}
+	else
+	{
+		<div class="elementos-listcor" id="elementos-lista-label">
+			<div class="elemento-node">Descrição</div>
+			<div class="elemento-node">Usuario</div>
+			<div class="elemento-node">Ferramenta</div>
+			<div class="elemento-node">Data criado</div>
+		</div>
+		<Virtualize Items="@ListaRelatorios" Context="relatorio" OverscanCount="50">
+			<div class="elementos-lista">
+				<div class="elemento-descricao">@relatorio.Descricao</div>
+				<div class="elemento-node">@relatorio.NomeUsuario</div>
+				<div class="elemento-node">@relatorio.NomeFerramenta</div>
+				<div class="elemento-node">@relatorio.DataCriacao</div>
+			</div>
+		</Virtualize>
+	}
+}
+
+@code {
+	private Guid UsuarioLogadoId { get; set; }
+
+	private List<RelatorioModel>? ListaRelatorios { get; set; }
+	private List<RelatorioModel>? TodosRelatorios { get; set; }
+	private DateTime DataInicio { get; set; } = DateTime.Today.AddDays(-7);
+	private DateTime DataFim { get; set; } = DateTime.Today;
+
+	private string nomeUsuario = string.Empty;
+	private string nomeFerramenta = string.Empty;
+	private bool inicializado = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await BuscarUsuarioLogadoId();
+		if (UsuarioLogadoId == Guid.Empty)
+		{
+			navManager.NavigateTo("/login");
+			return;
+		}
+
+		await BuscarRelatorios();
+
+		inicializado = true;
+	}
+
+	private async Task BuscarUsuarioLogadoId()
+	{
+		UsuarioLogadoId = await sessao.BuscarIdDoUsuarioLogado();
+	}
+	private async Task BuscarRelatorios()
+	{
+		var relatorios = await relatorioEndpoints.Buscar();
+
+		if (relatorios is not null)
+		{
+			ListaRelatorios = relatorios
+			.OrderByDescending(x => x.DataCriacao)
+			.ToList();
+
+			TodosRelatorios = ListaRelatorios;
+		}
+	}
+	private void FiltrarRelatorioPorData()
+	{
+		if (TodosRelatorios is not null)
+		{
+			ListaRelatorios = TodosRelatorios
+				.Where(x => x.DataCriacao >= DataInicio && x.DataCriacao <= DataFim.AddHours(23).AddMinutes(59))
+				.OrderByDescending(x => x.DataCriacao)
+				.ToList();
+		}
+	}
+
+	private void FiltrarRelatorioPorUsuario(string nomeUsuario)
+	{
+		List<RelatorioModel>? relatoriosFiltrados = new();
+
+		if (TodosRelatorios is not null)
+		{
+			relatoriosFiltrados = TodosRelatorios.Where(x => x.NomeUsuario is not null).ToList();
+		}
+
+		ListaRelatorios = relatoriosFiltrados
+			.Where(x => x.NomeUsuario!.ToLower()
+			.Contains(nomeUsuario.ToLower()))
+			.ToList();
+
+		if (nomeUsuario == string.Empty)
+			ListaRelatorios = TodosRelatorios;
+	}
+
+	private void FiltrarRelatorioPorFerramenta(string nomeFerramenta)
+	{
+		List<RelatorioModel>? relatoriosFiltrados = new();
+
+		if (TodosRelatorios is not null)
+		{
+			relatoriosFiltrados = TodosRelatorios.Where(x => x.NomeUsuario is not null).ToList();
+		}
+
+		ListaRelatorios = relatoriosFiltrados
+			.Where(x => x.NomeFerramenta!.ToLower()
+			.Contains(nomeFerramenta.ToLower()))
+			.ToList();
+
+		if (nomeFerramenta == string.Empty)
+			ListaRelatorios = TodosRelatorios;
+	}
+}

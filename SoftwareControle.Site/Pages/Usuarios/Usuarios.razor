@@ -1,0 +1,113 @@
+﻿@page "/usuarios"
+
+@inject ISessaoUsuario sessao
+@inject IUsuarioEndpoints usuarioEndpoints
+@inject NavigationManager navManager
+
+@if (inicializado)
+{
+	<div class="buscar-input-div">
+		<InputText @bind-Value="@usuarioLoginNome" class="elemento-buscar-input"
+		@oninput="(e) => FiltrarUsuarioPorNome(e.Value?.ToString())"
+				   placeholder="Procurar usuario por nome" />
+	</div>
+	@if (ListaUsuarios is null || ListaUsuarios.Count() == 0)
+	{
+		<div class="text-center my-5 fs-3 fw-bold">
+			Não foi encontrado nenhum usuário.
+		</div>
+	}
+	else
+	{
+		<div class="elementos-lista">
+			<div class="elemento-node">Foto</div>
+			<div class="elemento-node">Nome</div>
+			<div class="elemento-node">Cargo</div>
+		</div>
+		<Virtualize Items="@ListaUsuarios" Context="usuario" OverscanCount="50">
+			<a class="elementos-lista" href="/usuario/@usuario.Id">
+				<div class="elemento-node">
+					@if (usuario.ImagemString != string.Empty)
+					{
+						<img src="data:image/jpeg;base64,@usuario.ImagemString" alt="Foto"
+							 class="elementos-lista-foto" id="usuario-foto">
+					}
+					else
+					{
+						<div class="elemento-node">Sem foto</div>
+					}
+				</div>
+				<div class="elemento-node">@usuario.Nome</div>
+				<div class="elemento-node">@usuario.Cargo</div>
+			</a>
+		</Virtualize>
+	}
+	<div class="d-flex my-5 justify-content-end">
+		@if (UsuarioLogadoModel!.Cargo == "Administrador")
+		{
+			<div style="margin-right: 10px;">
+				<a class="botao-principal" href="/usuario/criar">Criar usuario</a>
+			</div>
+		}
+		<div>
+			<a class="botao-principal" href="/">Voltar</a>
+		</div>
+	</div>
+}
+
+@code {
+	private Guid UsuarioLogadoId { get; set; }
+	private UsuarioModel? UsuarioLogadoModel { get; set; }
+	private List<UsuarioModel>? ListaUsuarios { get; set; }
+	private List<UsuarioModel>? TodosUsuarios { get; set; }
+
+	private bool inicializado = false;
+	private string usuarioLoginNome = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await BuscarUsuarioLogadoId();
+		if (UsuarioLogadoId == Guid.Empty)
+		{
+			navManager.NavigateTo("/login");
+			return;
+		}
+
+		await BuscarUsuarioLogadoModel();
+		if (UsuarioLogadoModel is null)
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		await BuscarTodosUsuarios();
+
+		inicializado = true;
+	}
+
+	private async Task BuscarUsuarioLogadoId()
+	{
+		UsuarioLogadoId = await sessao.BuscarIdDoUsuarioLogado();
+	}
+	private async Task BuscarUsuarioLogadoModel()
+	{
+		UsuarioLogadoModel = await usuarioEndpoints.BuscarPorId(UsuarioLogadoId);
+	}
+	private async Task BuscarTodosUsuarios()
+	{
+		ListaUsuarios = await usuarioEndpoints.Buscar();
+		TodosUsuarios = ListaUsuarios;
+	}
+
+	private void FiltrarUsuarioPorNome(string? usuarioLogiNome)
+	{
+		if (usuarioLogiNome is not null)
+		{
+			ListaUsuarios = TodosUsuarios!.Where(x => x.Nome.ToLower()
+				.Contains(usuarioLogiNome.ToLower())).ToList();
+
+			if (usuarioLogiNome == string.Empty)
+				ListaUsuarios = TodosUsuarios;
+		}
+	}
+}

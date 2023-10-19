@@ -1,0 +1,158 @@
+﻿@page "/ferramenta/{FerramentaId}"
+
+@inject ISessaoUsuario sessao
+@inject IUsuarioEndpoints usuarioEndpoints
+@inject IFerramentaEndpoints ferramentaEndpoints
+@inject NavigationManager navManager
+
+@if (inicializado)
+{
+	<div class="elemento-detalhes-boxx">
+		@if(Ferramenta?.ImagemString != string.Empty)
+		{
+			<div class="text-center my-4">
+				<img src="data:image/jpeg;base64,@Ferramenta?.ImagemString" alt="Foto"
+					 class="ferramenta-detalhes-foto">
+			</div>
+		}
+
+		<div>
+			<div class="label-principal">Nome da ferramenta</div>
+			<div class="text-center my-2 fs-3">@Ferramenta!.Nome</div>
+		</div>
+		<div class="mt-4">
+			<div class="label-principal">Informações</div>
+			<div class="text-center my-4 fs-3">@Ferramenta!.Descricao</div>
+		</div>
+		<div class="d-flex justify-content-evenly my-4 fs-3 label-principal4">
+			<div>
+				@if (Ferramenta!.Disponivel is true)
+				{
+					<div class="text-color-success">Disponivel</div>
+				}
+				else
+				{
+					<div class="text-color-danger">Indisponivel</div>
+				}
+			</div>
+
+			<div>Data Criação: @Ferramenta.DataCriacao.ToString("dd/MM/yyyy")</div>
+			@if (Ferramenta!.DataAtualizacao is not null)
+			{
+				<div>Ultima Atualização: @Ferramenta.DataAtualizacao</div>
+			}
+		</div>
+	
+	<div class="d-flex my-5 justify-content-end align-items-center">
+		@if (UsuarioLogadoModel!.Cargo == "Administrador")
+		{
+			@if (Ferramenta.Disponivel == true)
+			{
+				<div>
+					<a href="/ordem/criar/@FerramentaId" class="botao-principal">Criar ordem</a>
+				</div>
+			}
+			<div>
+				<a href="/ferramenta/editar/@Ferramenta.Id" class="botao-principal">Editar</a>
+			</div>
+				<div style="margin-bottom: 7px;">
+				<button @onclick="MostrarDelete" class="botao-principal"
+							id="botao-principal">
+					@mostrarDeletarBotaoNome
+				</button>
+			</div>
+		}
+		<div>
+			<a href="/ferramentas" class="botao-principal">Voltar</a>
+		</div>
+	</div>
+	@if (mostrarDeletarDiv)
+	{
+		<div class="text-center">
+			<div >
+				Tem certeza que deseja deletar essa ferramenta?
+			</div>
+			<div>
+				<button @onclick="Deletar" class="botao-principal">Confirmar</button>
+			</div>
+		</div>
+	}
+	</div>
+}
+
+@code {
+	[Parameter]
+	public string? FerramentaId { get; set; }
+
+	private Guid UsuarioLogadoId { get; set; }
+	private UsuarioModel? UsuarioLogadoModel { get; set; }
+	private FerramentaModel? Ferramenta { get; set; }
+
+	private string mostrarDeletarBotaoNome = "Deletar";
+	private bool mostrarDeletarDiv = false;
+	private bool inicializado = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (FerramentaId == Guid.Empty.ToString())
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		await BuscarUsuarioLogadoId();
+
+		if (UsuarioLogadoId == Guid.Empty)
+		{
+			navManager.NavigateTo("/login");
+			return;
+		}
+
+		await BuscarUsuarioLogadoModel();
+		await BuscarFerramentaModel();
+
+		if (Ferramenta is null || UsuarioLogadoModel is null)
+		{
+			navManager.NavigateTo("/naoencontrado");
+			return;
+		}
+
+		inicializado = true;
+	}
+
+	private async Task BuscarUsuarioLogadoId()
+	{
+		UsuarioLogadoId = await sessao.BuscarIdDoUsuarioLogado();
+	}
+	private async Task BuscarUsuarioLogadoModel()
+	{
+		UsuarioLogadoModel = await usuarioEndpoints.BuscarPorId(UsuarioLogadoId);
+	}
+	private async Task BuscarFerramentaModel()
+	{
+		Ferramenta = await ferramentaEndpoints.BuscarPorId(Guid.Parse(FerramentaId!));
+		if(Ferramenta is not null && Ferramenta.Imagem is not null)
+		{
+			Ferramenta.ImagemString = Convert.ToBase64String(Ferramenta.Imagem);
+		}
+	}
+
+	private async Task Deletar()
+	{
+		await ferramentaEndpoints.Deletar(Guid.Parse(FerramentaId!));
+		navManager.NavigateTo("/ferramentas");
+	}
+
+	private void MostrarDelete()
+	{
+		if (mostrarDeletarDiv is false)
+		{
+			mostrarDeletarDiv = true;
+			mostrarDeletarBotaoNome = "Ocultar";
+			return;
+		}
+
+		mostrarDeletarDiv = false;
+		mostrarDeletarBotaoNome = "Deletar";
+	}
+}
