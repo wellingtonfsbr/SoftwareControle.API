@@ -1026,3 +1026,235 @@ footer {
 
 
 
+.formulario .titulo {
+    color: #757575;
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+}
+
+.formulario {
+    max-width: 500px;
+    margin: auto;
+    background: white;
+    overflow: hidden;
+    padding: 20px;
+}
+
+:focus {
+    outline: none;
+}
+
+.label {
+    float: left;
+    width: 100%;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.input-bordas {
+    font: 15px/24px "Lato", Arial, sans-serif;
+    color: #333;
+    width: 100%;
+    box-sizing: border-box;
+    letter-spacing: 1px;
+    border: 1px solid #ccc;
+    padding: 7px 14px 9px;
+    transition: 0.4s;
+}
+
+.textarea {
+    resize: none !important;
+}
+
+.input-bordas ~ .focus-border:before,
+.input-bordas ~ .focus-border:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 2px;
+    background-color: #3399FF;
+    transition: 0.2s;
+    transition-delay: 0.2s;
+}
+
+.input-bordas ~ .focus-border:after {
+    top: auto;
+    bottom: 0;
+    right: auto;
+    left: 0;
+    transition-delay: 0.6s;
+}
+
+.input-bordas ~ .focus-border i:before,
+.input-bordas ~ .focus-border i:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 0;
+    background-color: #3399FF;
+    transition: 0.2s;
+}
+
+.input-bordas ~ .focus-border i:after {
+    left: auto;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    transition-delay: 0.4s;
+}
+
+.input-bordas:focus ~ .focus-border:before,
+.input-bordas:focus ~ .focus-border:after {
+    width: 100%;
+    transition: 0.2s;
+    transition-delay: 0.6s;
+}
+
+.input-bordas:focus ~ .focus-border:after {
+    transition-delay: 0.2s;
+}
+
+.input-bordas:focus ~ .focus-border i:before,
+.input-bordas:focus ~ .focus-border i:after {
+    height: 100%;
+    transition: 0.2s;
+}
+
+.input-bordas:focus ~ .focus-border i:after {
+    transition-delay: 0.4s;
+}
+
+
+.button-form {
+    background-color: #39f;
+    padding: 0.5em 1.3em;
+    color: #fff;
+    font-size: 1.2em;
+    border: none;
+    cursor: pointer;
+}
+
+.borda-inversa {
+    display: inline-block;
+    vertical-align: middle;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-transition-duration: 0.5s;
+    transition-duration: 0.5s;
+    -webkit-transition-property: background;
+    transition-property: background;
+    box-shadow: inset 0 0 0 2px #39f, 0 0 1px rgba(0, 0, 0, 0);
+}
+
+    .borda-inversa:hover, .borda-inversa:focus, .borda-inversa:active {
+        background: none;
+        color: #39f;
+    }
+
+/*Anti-span*/
+.naoexibir {
+    display: none;
+}
+
+
+
+
+
+
+.buttonk {
+    position: relative;
+    width: 150px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border: 1px solid #9e9e9e;
+    background-color: #757575;
+    overflow: hidden;
+}
+
+.buttonk, .buttonk__icon, .buttonk__text {
+    transition: all 0.3s;
+}
+
+    .buttonk .buttonk__text {
+        transform: translateX(22px);
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .buttonk .buttonk__icon {
+        position: absolute;
+        transform: translateX(109px);
+        height: 100%;
+        width: 39px;
+        background-color: #555;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .buttonk .svg {
+        width: 20px;
+        fill: #fff;
+    }
+
+    .buttonk:hover {
+        background: #555;
+    }
+
+        .buttonk:hover .buttonk__text {
+            color: transparent;
+        }
+
+        .buttonk:hover .buttonk__icon {
+            width: 148px;
+            transform: translateX(0);
+        }
+
+    .buttonk:active .buttonk__icon {
+        background-color: #555;
+    }
+
+    .buttonk:active {
+        border: 1px solid #146c54;
+    }
+
+
+
+.custom-upload-button {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    border: 2px solid #ccc;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+    /* Estilize o InputFile */
+    .custom-upload-button input[type="file"] {
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin: 0;
+        padding: 0;
+        font-size: 100px;
+        cursor: pointer;
+        opacity: 0;
+     
+    }
+
+
+
