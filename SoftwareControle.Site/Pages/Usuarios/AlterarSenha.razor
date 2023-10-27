@@ -6,31 +6,67 @@
 
 @if (inicializado)
 {
-	<div class="text-center fs-3 fw-bold my-4">Trocar senha do usuario @UsuarioTrocarSenha!.Nome</div>
-	<div class="text-center">
-		<EditForm Model="UsuarioTrocarSenha" OnValidSubmit="Atualizar" Context="Form">
-			<div>
-				<InputText @bind-Value="UsuarioTrocarSenha!.Senha" type="password"
-					class="input" placeholder="Nova Senha" />
+	<EditForm Model="UsuarioTrocarSenha" OnValidSubmit="Atualizar" Context="Form">
+
+		<div class="formulario">
+			<div class="text-simplesE">
+				<div class="text-center fs-2 ">Trocar senha do usuario</div>
+
+
+				<div class="card2">
+					<div class="textBox2">
+						<div class="textContent">
+							<div class="text-center fs-2 "> @UsuarioTrocarSenha!.Nome</div>
+
+						</div>
+					</div>
+				</div>
+
+
 			</div>
-			<div class="my-4">
-				<InputText @bind-Value="confirmarSenha" type="password"
-						   class="input" placeholder="Confirmar Senha" />
+
+
+
+			<div class="text-simplesW ">
+				<span>Digite a nova senha</span>
 			</div>
-			<div class="d-flex my-5 justify-content-end align-items-center">
+
+			<label class="label">
 				<div>
+					<InputText @bind-Value="UsuarioTrocarSenha!.Senha" type="password"
+							   class="input-bordas" placeholder="Nova Senha" />
+					<span class="focus-border"> <i></i> </span>
+				</div>
+			</label>
+
+			<div class="text-simplesW ">
+				<span>Confirmar nova senha</span>
+			</div>
+
+			<div>
+				<InputText @bind-Value="confirmarSenha" type="password"
+						   class="input-bordas" placeholder="Confirmar Senha" />
+
+			</div>
+
+
+			<div class="d-flex my-10 justify-content-end align-items-center">
+				<div style="margin-bottom: 7px;">
 					<button type="submit" class="botao-principal"
-							id="botao-padding-ajustes">
+							id="botao-principal" style="margin-top: 55px;">
 						Alterar
 					</button>
 				</div>
+
 				<div>
-					<a href="/usuario/@UsuarioId" class="botao-principal">Voltar</a>
+					<a href="/usuario/@UsuarioId" class="botao-principal" style="margin-top: 55px;">Voltar</a>
 				</div>
+
 			</div>
-		</EditForm>
-	</div>
-	<div class="text-center my-4 fs-3 fw-bold text-danger">
+		</div>
+	</EditForm>
+
+	<div class="text-center text-danger my-5 fs-3 fw-bold">
 		@resultado
 	</div>
 }
@@ -50,26 +86,26 @@
 	protected override async Task OnInitializedAsync()
 	{
 		await BuscarUsuarioLogadoId();
-		if(UsuarioLogadoId == Guid.Empty)
+		if (UsuarioLogadoId == Guid.Empty)
 		{
 			navManager.NavigateTo("/login");
 			return;
 		}
 
 		await BuscarUsuarioLogadoModel();
-		if(UsuarioLogadoModel is null)
+		if (UsuarioLogadoModel is null)
 		{
 			navManager.NavigateTo("/naoencontrado");
 			return;
 		}
-		if(UsuarioLogadoModel.Cargo != "Administrador")
+		if (UsuarioLogadoModel.Cargo != "Administrador")
 		{
 			navManager.NavigateTo("/naoautorizado");
 			return;
 		}
 
 		await BuscarUsuarioTrocarSenha();
-		if(UsuarioTrocarSenha is null)
+		if (UsuarioTrocarSenha is null)
 		{
 			navManager.NavigateTo("/naoencontrado");
 			return;
@@ -93,7 +129,7 @@
 
 	private async Task Atualizar()
 	{
-		if(UsuarioTrocarSenha!.Senha != confirmarSenha)
+		if (UsuarioTrocarSenha!.Senha != confirmarSenha)
 		{
 			resultado = "As senhas não coincidem.";
 			return;

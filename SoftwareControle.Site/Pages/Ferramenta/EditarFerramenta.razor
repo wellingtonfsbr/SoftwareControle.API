@@ -8,41 +8,69 @@
 
 @if (inicializado)
 {
-    <div class="form-label">Editar ferramenta</div>
+    
 
     <EditForm Model="Ferramenta" OnValidSubmit="Atualizar" Context="Form">
-        <div class="criar-form-div">
-            <div class="text-center my-4">
-                <div class="fs-3 my-2">
+
+        <div class="formulario">
+            <h2 class="titulo">Editar ferramenta</h2>
+            <div >
+
+
+                <div class="text-simplesW">
                     Nome da ferramenta
                 </div>
+
+                <label class="label">
                 <div>
-                    <InputText @bind-Value="Ferramenta!.Nome" class="input" placeholder="Nome" />
+                    <InputText @bind-Value="Ferramenta!.Nome" class="input-bordas" placeholder="Nome" />
+                        <span class="focus-border"> <i></i> </span>
                 </div>
+                </label>
+
             </div>
-            <div class="text-center my-4">
-                <div class="fs-3 my-2">
+            <div >
+                <div class="text-simplesW">
                     Descrição da ferramenta
                 </div>
+                
+                <label class="label">
                 <div>
-                    <InputTextArea @bind-Value="Ferramenta!.Descricao" class="input"
+                    <InputTextArea @bind-Value="Ferramenta!.Descricao" class="input-bordas"
                                    placeholder="Descrição" />
+                        <span class="focus-border"> <i></i> </span>
                 </div>
+                </label>
             </div>
-            <div class="text-center">
-                <div class="fs-3 my-2">
-                    Insira uma imagem
-                </div>
-                <div>
-                    <InputFile OnChange="ProcessarImagem" />
-                </div>
+
+
+
+            <div class="text-simples ">
+                <span>Atualizar foto</span>
             </div>
-            <div class="d-flex my-5 justify-content-end align-items-center">
-                <div>
-                    <button type="submit" class="botao-principal" id="botao-padding-ajustes">Atualizar</button>
+
+            <div class="custom-upload-button">
+                <button class="buttonk">
+                    <span class="buttonk__text">Add Foto</span>
+                    <span class="buttonk__icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" id="bdd05811-e15d-428c-bb53-8661459f9307" data-name="Layer 2" class="svg">
+                            <path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"></path>
+                            <path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.990,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"></path>
+                            <path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,0,1,2.5,0v8.738a.815.815,0,0,0,.814.814H31.436a.815.815,0,0,0,.814-.814V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"></path>
+                        </svg>
+                    </span>
+                </button>
+                <InputFile OnChange="ProcessarImagem" style="position: absolute; top: 0; right: 0; margin: 0; padding: 0; font-size: 100px; cursor: pointer; opacity: 0;" />
+            </div>
+
+
+
+            <div class="d-flex my-10 justify-content-end align-items-center">
+                <div style="margin-bottom: 7px;">
+                    <button type="submit" class="botao-principal" id="botao-principal" style="margin-top: 20px;">Atualizar</button>
                 </div>
                 <div>
-                    <a href="/ferramentas" class="botao-principal">Voltar</a>
+                    <a href="/ferramentas" class="botao-principal" style="margin-top: 20px;">Voltar</a>
                 </div>
             </div>
         </div>

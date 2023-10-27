@@ -7,76 +7,130 @@
 
 @if (inicializado)
 {
-	<div class="elemento-detalhes-boxx">
-		@if(Ferramenta?.ImagemString != string.Empty)
-		{
-			<div class="text-center my-4">
-				<img src="data:image/jpeg;base64,@Ferramenta?.ImagemString" alt="Foto"
-					 class="ferramenta-detalhes-foto">
-			</div>
-		}
 
-		<div>
-			<div class="label-principal">Nome da ferramenta</div>
-			<div class="text-center my-2 fs-3">@Ferramenta!.Nome</div>
-		</div>
-		<div class="mt-4">
-			<div class="label-principal">Informações</div>
-			<div class="text-center my-4 fs-3">@Ferramenta!.Descricao</div>
-		</div>
-		<div class="d-flex justify-content-evenly my-4 fs-3 label-principal4">
-			<div>
-				@if (Ferramenta!.Disponivel is true)
-				{
-					<div class="text-color-success">Disponivel</div>
-				}
-				else
-				{
-					<div class="text-color-danger">Indisponivel</div>
-				}
-			</div>
-
-			<div>Data Criação: @Ferramenta.DataCriacao.ToString("dd/MM/yyyy")</div>
-			@if (Ferramenta!.DataAtualizacao is not null)
-			{
-				<div>Ultima Atualização: @Ferramenta.DataAtualizacao</div>
-			}
-		</div>
-	
-	<div class="d-flex my-5 justify-content-end align-items-center">
-		@if (UsuarioLogadoModel!.Cargo == "Administrador")
-		{
-			@if (Ferramenta.Disponivel == true)
+	<div class="formulario44">
+		<div class="photo-container">
+			@if (Ferramenta?.ImagemString != string.Empty)
 			{
 				<div>
-					<a href="/ordem/criar/@FerramentaId" class="botao-principal">Criar ordem</a>
+					<img src="data:image/jpeg;base64,@Ferramenta?.ImagemString" alt="Foto"
+						 class="ferramenta-detalhes-foto">
+				</div>
+			}
+			<div class="photo-info22">
+
+				<div class="text-center-middle2">
+					<div class="label-principal3">Nome da ferramenta</div>
+					<div>@Ferramenta!.Nome</div>
+				</div>
+
+
+
+
+				<div class="text-center-middle2">
+					<div class="label-principal3">Informações</div>
+					<div class="elemento-node22">@Ferramenta!.Descricao</div>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="text-center-middle2">
+			<div class="label-principal3">
+
+				<div>
+					@if (Ferramenta!.Disponivel is true)
+					{
+						<div class="text-color-success">Disponivel</div>
+					}
+					else
+					{
+						<div class="text-color-danger">Indisponivel</div>
+					}
+
+				</div>
+
+			</div>
+		</div>
+
+
+
+
+		<div class="photo-info2 my-3">
+
+			<div class="d-flex justify-content-evenly align-items-center">
+
+
+				<div class="d-flex justify-content-evenly align-items-center">
+
+
+					<div class="photo-info2 ">
+						<div class="mb-4 label-principal8">Data criação</div>
+						<div class=" mb-3 text-normal"> @Ferramenta.DataCriacao.ToString("dd/MM/yyyy")</div>
+
+					</div>
+				</div>
+
+
+
+				<div>
+
+					<div class="d-flex justify-content-evenly align-items-center">
+
+
+						@if (Ferramenta!.DataAtualizacao is not null)
+
+						{
+							<div class="photo-info2 ">
+								<div class="mb-4 label-principal8">Ultima Atualização:</div>
+
+								<div class=" mb-3  text-normal"> @Ferramenta.DataAtualizacao</div>
+							</div>
+
+						}
+
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+
+
+		<div class="d-flex my-10 justify-content-end align-items-center">
+			@if (UsuarioLogadoModel!.Cargo == "Administrador")
+			{
+				@if (Ferramenta.Disponivel == true)
+				{
+					<div>
+						<a href="/ordem/criar/@FerramentaId" class="botao-principal" style="margin-top: 20px">Criar ordem</a>
+					</div>
+				}
+				<div>
+					<a href="/ferramenta/editar/@Ferramenta.Id" class="botao-principal" style="margin-top: 20px">Editar</a>
+				</div>
+				<div style="margin-bottom: 7px;">
+					<button @onclick="MostrarDelete" class="botao-principal"
+							id="botao-principal" style="margin-top: 20px">
+						@mostrarDeletarBotaoNome
+					</button>
 				</div>
 			}
 			<div>
-				<a href="/ferramenta/editar/@Ferramenta.Id" class="botao-principal">Editar</a>
+				<a href="/ferramentas" class="botao-principal" style="margin-top: 20px; margin-left: 90px;">Voltar</a>
 			</div>
-				<div style="margin-bottom: 7px;">
-				<button @onclick="MostrarDelete" class="botao-principal"
-							id="botao-principal">
-					@mostrarDeletarBotaoNome
-				</button>
+		</div>
+		@if (mostrarDeletarDiv)
+		{
+			<div class="text-center">
+				<div>
+					Tem certeza que deseja deletar essa ferramenta?
+				</div>
+				<div>
+					<button @onclick="Deletar" class="botao-principal" style="margin-top: 20px">Confirmar</button>
+				</div>
 			</div>
 		}
-		<div>
-			<a href="/ferramentas" class="botao-principal">Voltar</a>
-		</div>
-	</div>
-	@if (mostrarDeletarDiv)
-	{
-		<div class="text-center">
-			<div >
-				Tem certeza que deseja deletar essa ferramenta?
-			</div>
-			<div>
-				<button @onclick="Deletar" class="botao-principal">Confirmar</button>
-			</div>
-		</div>
-	}
 	</div>
 }
 
@@ -131,7 +185,7 @@
 	private async Task BuscarFerramentaModel()
 	{
 		Ferramenta = await ferramentaEndpoints.BuscarPorId(Guid.Parse(FerramentaId!));
-		if(Ferramenta is not null && Ferramenta.Imagem is not null)
+		if (Ferramenta is not null && Ferramenta.Imagem is not null)
 		{
 			Ferramenta.ImagemString = Convert.ToBase64String(Ferramenta.Imagem);
 		}

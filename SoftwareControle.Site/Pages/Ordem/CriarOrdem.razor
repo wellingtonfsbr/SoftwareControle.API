@@ -9,48 +9,69 @@
 
 @if (inicializado)
 {
-    <div class="form-label">Criar Ordem para @Ferramenta!.Nome</div>
 
     <EditForm Model="Ordem" OnValidSubmit="Criar" Context="Form">
-        <div class="criar-form-div">
-            <div class="text-center">
-                <div class="fs-3 my-2">
+
+
+
+        <div class="formulario">
+
+            <div class="text-simplesE">
+                <div class="text-center fs-2 ">Criar ordem para a ferramenta:</div>
+
+
+                <div class="card2">
+                    <div class="textBox2">
+                        <div class="textContent">
+                            <div class="text-center fs-2 "> @Ferramenta!.Nome</div>
+
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+            <div class="text-center-middle ">
+                <div class="fs-4 my-2">
                     Descrição da ordem
                 </div>
+
                 <div>
-                    <InputTextArea @bind-Value="Ordem!.Descricao" class="input" placeholder="Descrição" />
+                    <InputTextArea @bind-Value="Ordem!.Descricao" class="input-bordas" placeholder="Descrição" />
                 </div>
             </div>
-            <div class="text-center">
-                <div class="fs-3 my-2">
+            <div class="text-center-middle">
+                <div class="fs-4 my-2">
                     Nivel de urgência
                 </div>
                 <div>
-                    <select @bind="Ordem.NivelUrgencia" class="input">
+                    <select @bind="Ordem.NivelUrgencia" class="input-bordas">
                         <option value="">Selecionar urgência</option>
                         <option value="Urgente">Urgente</option>
                         <option value="Normal">Normal</option>
                     </select>
                 </div>
             </div>
-            <div class="text-center">
-                <div class="fs-3 my-2">
+            <div class="text-center-middle">
+                <div class="fs-4 my-2">
                     Data de prazo máximo
                 </div>
                 <div>
                     <InputDate @bind-Value="Ordem!.DataPrazoMaximo"
-                               class="input" placeholder="Prazo Máximo" />
+                               class="input-bordas" placeholder="Prazo Máximo" />
                 </div>
             </div>
-            <div class="d-flex my-5 justify-content-end align-items-center">
-                <div>
+            <div class="d-flex my-10 justify-content-end align-items-center">
+                <div style="margin-bottom: 7px;">
                     <button type="submit" class="botao-principal"
-                            id="botao-padding-ajustes">
+                            id="botao-padding-ajustes" style="margin-top: 20px">
                         Criar
                     </button>
                 </div>
                 <div>
-                    <a href="/ferramenta/@FerramentaId" class="botao-principal">Voltar</a>
+                    <a href="/ferramenta/@FerramentaId" class="botao-principal" style="margin-top: 20px">Voltar</a>
                 </div>
             </div>
         </div>
@@ -75,32 +96,32 @@
     protected override async Task OnInitializedAsync()
     {
         await BuscarUsuarioLogadoId();
-        if(UsuarioLogadoId == Guid.Empty)
+        if (UsuarioLogadoId == Guid.Empty)
         {
             navManager.NavigateTo("/login");
             return;
         }
 
         await BuscarUsuarioLogadoModel();
-        if(UsuarioLogadoModel is null)
+        if (UsuarioLogadoModel is null)
         {
             navManager.NavigateTo("/login");
             return;
         }
-        if(UsuarioLogadoModel.Cargo != "Administrador")
+        if (UsuarioLogadoModel.Cargo != "Administrador")
         {
             navManager.NavigateTo("/naoautorizado");
             return;
         }
 
         await BuscarFerramentaModel();
-        if(Ferramenta is null)
+        if (Ferramenta is null)
         {
             navManager.NavigateTo("/naoencontrado");
             return;
         }
 
-        if(Ferramenta.Disponivel is false)
+        if (Ferramenta.Disponivel is false)
         {
             navManager.NavigateTo("/findisponivel");
             return;
@@ -142,12 +163,12 @@
 
             resultado = await ferramentaEndpoints.Atualizar(Ferramenta);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             resultado = ex.Message;
         }
 
-        if(resultado is null)
+        if (resultado is null)
         {
             await CriarRelatorio();
             navManager.NavigateTo($"/ordens");
@@ -165,11 +186,11 @@
 
     private string? FiltrarResultado(string? resultado)
     {
-        if(resultado is not null)
-        if (resultado.Contains("NivelUrgencia field is required"))
-        {
-            return "Selecione o nivel de urgência";
-        }
+        if (resultado is not null)
+            if (resultado.Contains("NivelUrgencia field is required"))
+            {
+                return "Selecione o nivel de urgência";
+            }
 
         return null;
     }

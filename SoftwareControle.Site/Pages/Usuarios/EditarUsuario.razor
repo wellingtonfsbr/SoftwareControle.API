@@ -6,55 +6,82 @@
 
 @if (inicializado)
 {
-	<div class="form-label">Atualizar usuário</div>
+
 
 	<EditForm Model="UsuarioCriado" OnValidSubmit="Atualizar" Context="Form">
-		<div class="criar-form-div">
-			<div class="text-center my-4">
+		<div class="formulario">
+			<h2 class="titulo">Atualizar usuário</h2>
+
+			<div>
 				<div class="fs-3 my-2">
-					Usuario
+					Nome de Usuário
 				</div>
-				<div>
-					<InputText @bind-Value="UsuarioCriado!.Usuario"
-							   class="input" placeholder="Usuario" />
-				</div>
+
+				<label class="label">
+					<div>
+						<InputText @bind-Value="UsuarioCriado!.Usuario"
+								   class="input-bordas" placeholder="Usuario" />
+						<span class="focus-border"> <i></i> </span>
+					</div>
+				</label>
 			</div>
-			<div class="text-center my-4">
+
+			<div>
 				<div class="fs-3 my-2">
 					Nome
 				</div>
-				<div>
-					<InputText @bind-Value="UsuarioCriado!.Nome"
-							   class="input" placeholder="Nome" />
-				</div>
+				<label class="label">
+					<div>
+						<InputText @bind-Value="UsuarioCriado!.Nome"
+								   class="input-bordas" placeholder="Nome" />
+					</div>
+				</label>
 			</div>
-			<div class="text-center my-4">
+
+			<div>
 				<div class="fs-3 my-2">
 					Cargo
 				</div>
-				<select @bind="UsuarioCriado.Cargo" class="input">
-					<option value="">Selecionar cargo</option>
-					<option value="Funcionario">Funcionario</option>
-					<option value="Administrador">Administrador</option>
-				</select>
+				<label class="label">
+					<select @bind="UsuarioCriado.Cargo" class="input-bordas">
+						<span class="focus-border"> <i></i> </span>
+						<option value="">Selecionar cargo</option>
+						<option value="Funcionario">Funcionario</option>
+						<option value="Administrador">Administrador</option>
+					</select>
+				</label>
 			</div>
-			<div class="text-center">
-				<div class="fs-3 my-2">
-					Foto de perfil
-				</div>
-				<div>
-					<InputFile OnChange="ProcessarImagem" />
-				</div>
+
+
+			<div class="text-simples ">
+				<span>Atualizar foto</span>
 			</div>
-			<div class="d-flex my-5 justify-content-end align-items-center">
-				<div>
+
+			<div class="custom-upload-button">
+				<button class="buttonk">
+					<span class="buttonk__text">Add Foto</span>
+					<span class="buttonk__icon">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" id="bdd05811-e15d-428c-bb53-8661459f9307" data-name="Layer 2" class="svg">
+							<path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"></path>
+							<path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.990,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"></path>
+							<path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,0,1,2.5,0v8.738a.815.815,0,0,0,.814.814H31.436a.815.815,0,0,0,.814-.814V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"></path>
+						</svg>
+					</span>
+				</button>
+				<InputFile OnChange="ProcessarImagem" style="position: absolute; top: 0; right: 0; margin: 0; padding: 0; font-size: 100px; cursor: pointer; opacity: 0;" />
+			</div>
+
+
+
+			<div class="d-flex my-10 justify-content-end align-items-center">
+				<div style="margin-bottom: 7px;">
 					<button type="submit" class="botao-principal"
-							id="botao-padding-ajustes">
+							id="botao-principal" style="margin-top: 20px;">
 						Concluir
 					</button>
 				</div>
 				<div>
-					<a href="/usuario/@UsuarioId" class="botao-principal">Voltar</a>
+					<a href="/usuario/@UsuarioId" class="botao-principal" style="margin-top: 20px;">Voltar</a>
 				</div>
 			</div>
 		</div>
@@ -85,7 +112,7 @@
 		}
 
 		await BuscarUsuarioCriadoModel();
-		if(UsuarioCriado is null)
+		if (UsuarioCriado is null)
 		{
 			navManager.NavigateTo("/naoencontrado");
 			return;
